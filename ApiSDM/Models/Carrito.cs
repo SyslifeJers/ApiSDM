@@ -13,7 +13,6 @@ namespace ApiSDM.Models
         public DateTime? Modificado { get; set; }
         public int? Cantidad { get; set; }
         public string Nota { get; set; }
-        public int? ProductoDelDiaId { get; set; }
         public int? ProductoId { get; set; }
         public int IdCliente { get; set; }
 

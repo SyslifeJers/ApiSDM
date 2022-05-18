@@ -12,17 +12,18 @@ namespace ApiSDM.Models
         public Producto()
         {
             Carrito = new HashSet<Carrito>();
-            DetalleOrden = new HashSet<DetalleOrden>();
+            Presentacion = new HashSet<Presentacion>();
         }
 
         public int Id { get; set; }
         public string Nombre { get; set; }
         public string Descripcion { get; set; }
-        public decimal? Precio { get; set; }
         public int? Activo { get; set; }
         public DateTime? Modificado { get; set; }
+        public int? Categoria { get; set; }
 
+        public virtual Categoria CategoriaNavigation { get; set; }
         public virtual ICollection<Carrito> Carrito { get; set; }
-        public virtual ICollection<DetalleOrden> DetalleOrden { get; set; }
+        public virtual ICollection<Presentacion> Presentacion { get; set; }
     }
 }

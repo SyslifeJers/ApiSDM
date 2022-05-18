@@ -19,11 +19,14 @@ namespace ApiSDM.Models
         {
         }
 
+        public virtual DbSet<Adminitrador> Adminitrador { get; set; }
         public virtual DbSet<Carrito> Carrito { get; set; }
+        public virtual DbSet<Categoria> Categoria { get; set; }
         public virtual DbSet<Cliente> Cliente { get; set; }
         public virtual DbSet<DetalleOrden> DetalleOrden { get; set; }
         public virtual DbSet<Orden> Orden { get; set; }
         public virtual DbSet<OrfertasDelDia> OrfertasDelDia { get; set; }
+        public virtual DbSet<Presentacion> Presentacion { get; set; }
         public virtual DbSet<Producto> Producto { get; set; }
         public virtual DbSet<Repartidor> Repartidor { get; set; }
         public virtual DbSet<Ruta> Ruta { get; set; }
@@ -34,12 +37,41 @@ namespace ApiSDM.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseMySql("server=217.21.76.51;database=u204501959_SaborDeMexico;user=u204501959_user;password=Rtx2080_", x => x.ServerVersion("10.5.12-mariadb"));
+                optionsBuilder.UseMySql("server=217.21.76.51;database=u204501959_SaborDeMexico;user=u204501959_user;password=Rtx2080_", x => x.ServerVersion("10.5.15-mariadb"));
             }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Adminitrador>(entity =>
+            {
+                entity.Property(e => e.Id).HasColumnType("int(11)");
+
+                entity.Property(e => e.Pass)
+                    .IsRequired()
+                    .HasColumnName("pass")
+                    .HasColumnType("text")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_unicode_ci");
+
+                entity.Property(e => e.Registro)
+                    .HasColumnName("registro")
+                    .HasColumnType("datetime");
+
+                entity.Property(e => e.Token)
+                    .HasColumnName("token")
+                    .HasColumnType("longtext")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_unicode_ci");
+
+                entity.Property(e => e.User)
+                    .IsRequired()
+                    .HasColumnName("user")
+                    .HasColumnType("text")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_unicode_ci");
+            });
+
             modelBuilder.Entity<Carrito>(entity =>
             {
                 entity.HasIndex(e => e.IdCliente)
@@ -61,10 +93,6 @@ namespace ApiSDM.Models
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_unicode_ci");
 
-                entity.Property(e => e.ProductoDelDiaId)
-                    .HasColumnName("Producto_DelDia_Id")
-                    .HasColumnType("int(11)");
-
                 entity.Property(e => e.ProductoId)
                     .HasColumnName("Producto_Id")
                     .HasColumnType("int(11)");
@@ -79,6 +107,19 @@ namespace ApiSDM.Models
                     .WithMany(p => p.Carrito)
                     .HasForeignKey(d => d.ProductoId)
                     .HasConstraintName("fk_Carrito_Producto1");
+            });
+
+            modelBuilder.Entity<Categoria>(entity =>
+            {
+                entity.Property(e => e.Id).HasColumnType("int(11)");
+
+                entity.Property(e => e.Activo).HasColumnType("int(11)");
+
+                entity.Property(e => e.Descripcion)
+                    .IsRequired()
+                    .HasColumnType("mediumtext")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_unicode_ci");
             });
 
             modelBuilder.Entity<Cliente>(entity =>
@@ -120,6 +161,9 @@ namespace ApiSDM.Models
                 entity.HasKey(e => e.IdDetalleOrden)
                     .HasName("PRIMARY");
 
+                entity.HasIndex(e => e.IdPresentacion)
+                    .HasName("fk_DetalleOrden_Presentacion");
+
                 entity.HasIndex(e => e.OrdenId)
                     .HasName("fk_DetalleOrden_Orden_idx");
 
@@ -132,6 +176,10 @@ namespace ApiSDM.Models
 
                 entity.Property(e => e.Cantidad).HasColumnType("int(11)");
 
+                entity.Property(e => e.IdPresentacion)
+                    .HasColumnName("Id_Presentacion")
+                    .HasColumnType("int(11)");
+
                 entity.Property(e => e.Nota)
                     .HasColumnType("varchar(145)")
                     .HasCharSet("utf8mb4")
@@ -141,15 +189,17 @@ namespace ApiSDM.Models
                     .HasColumnName("Orden_Id")
                     .HasColumnType("int(11)");
 
-                entity.Property(e => e.ProductoDelDiaId)
-                    .HasColumnName("Producto_DelDia_Id")
-                    .HasColumnType("int(11)");
-
                 entity.Property(e => e.ProductoId)
                     .HasColumnName("Producto_Id")
                     .HasColumnType("int(11)");
 
                 entity.Property(e => e.Subtotal).HasColumnType("decimal(20,2)");
+
+                entity.HasOne(d => d.IdPresentacionNavigation)
+                    .WithMany(p => p.DetalleOrdenIdPresentacionNavigation)
+                    .HasForeignKey(d => d.IdPresentacion)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_DetalleOrden_Presentacion");
 
                 entity.HasOne(d => d.Orden)
                     .WithMany(p => p.DetalleOrden)
@@ -158,7 +208,7 @@ namespace ApiSDM.Models
                     .HasConstraintName("fk_DetalleOrden_Orden");
 
                 entity.HasOne(d => d.Producto)
-                    .WithMany(p => p.DetalleOrden)
+                    .WithMany(p => p.DetalleOrdenProducto)
                     .HasForeignKey(d => d.ProductoId)
                     .HasConstraintName("fk_DetalleOrden_Producto1");
             });
@@ -247,11 +297,48 @@ namespace ApiSDM.Models
                     .HasColumnType("int(11)");
             });
 
+            modelBuilder.Entity<Presentacion>(entity =>
+            {
+                entity.HasIndex(e => e.IdProducto)
+                    .HasName("fk_Presentacion_Producto");
+
+                entity.Property(e => e.Id).HasColumnType("int(11)");
+
+                entity.Property(e => e.IdProducto)
+                    .HasColumnName("Id_Producto")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.Medida)
+                    .IsRequired()
+                    .HasColumnType("text")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_unicode_ci");
+
+                entity.Property(e => e.Precentacion)
+                    .IsRequired()
+                    .HasColumnType("text")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_unicode_ci");
+
+                entity.Property(e => e.Precio).HasColumnType("decimal(10,2)");
+
+                entity.HasOne(d => d.IdProductoNavigation)
+                    .WithMany(p => p.Presentacion)
+                    .HasForeignKey(d => d.IdProducto)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_Presentacion_Producto");
+            });
+
             modelBuilder.Entity<Producto>(entity =>
             {
+                entity.HasIndex(e => e.Categoria)
+                    .HasName("fk_categoria_Producto");
+
                 entity.Property(e => e.Id).HasColumnType("int(11)");
 
                 entity.Property(e => e.Activo).HasColumnType("int(11)");
+
+                entity.Property(e => e.Categoria).HasColumnType("int(11)");
 
                 entity.Property(e => e.Descripcion)
                     .HasColumnType("varchar(250)")
@@ -265,7 +352,10 @@ namespace ApiSDM.Models
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_unicode_ci");
 
-                entity.Property(e => e.Precio).HasColumnType("decimal(20,2)");
+                entity.HasOne(d => d.CategoriaNavigation)
+                    .WithMany(p => p.Producto)
+                    .HasForeignKey(d => d.Categoria)
+                    .HasConstraintName("fk_categoria_Producto");
             });
 
             modelBuilder.Entity<Repartidor>(entity =>
