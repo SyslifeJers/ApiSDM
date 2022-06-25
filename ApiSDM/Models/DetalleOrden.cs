@@ -19,6 +19,6 @@ namespace ApiSDM.Models
 
         public virtual Presentacion IdPresentacionNavigation { get; set; }
         public virtual Orden Orden { get; set; }
-        public virtual Presentacion Producto { get; set; }
+        public virtual Producto Producto { get; set; }
     }
 }

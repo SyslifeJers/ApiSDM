@@ -16,10 +16,11 @@ namespace ApiSDM.Models
 
         public int Id { get; set; }
         public string Nombre { get; set; }
+        public decimal Rango { get; set; }
+        public decimal Lat { get; set; }
+        public decimal Lon { get; set; }
         public int? Activo { get; set; }
         public DateTime? Modificado { get; set; }
-        public string Pin { get; set; }
-        public string Token { get; set; }
 
         public virtual ICollection<Orden> Orden { get; set; }
     }

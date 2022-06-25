@@ -22,9 +22,19 @@ namespace ApiSDM.Controllers
 
         // GET: api/Ubicacions
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Ubicacion>>> GetUbicacion()
+        public async Task<ActionResult> GetUbicacion()
         {
-            return await _context.Ubicacion.ToListAsync();
+            bool envio = false;
+            try
+            {
+                Herramientas.Correo("jers.sist@gmail.com", "Confirmacion", "tu orden ya va");
+            }
+            catch (Exception r)
+            {
+
+                envio = false;
+            }
+            return Ok(envio);
         }
 
         // GET: api/Ubicacions/5

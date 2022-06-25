@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using ApiSDM.Models;
 using System.Text;
 using System.Security.Cryptography;
 using ApiSDM.Models.ViewsModel;
+using System;
 
 namespace ApiSDM.Controllers
 {
@@ -21,6 +23,151 @@ namespace ApiSDM.Controllers
         public ClientesController(u204501959_SaborDeMexicoContext context)
         {
             _context = context;
+        }
+
+        [HttpPost("Reenviar")]
+        public async Task<ActionResult<Cliente>> PostCodigoRenviar(Cliente cliente)
+        {
+            var clien = await _context.Cliente.FirstOrDefaultAsync(d=>d.Correo.Equals(cliente.Correo));
+            try
+            {
+                Herramientas.Correo(clien.Correo, "Recuperación de contrase♫a", "Tu codigo de validacion es: " + clien.CodigoR);
+                clien.Id = 1;
+                return Ok(cliente);
+            }
+            catch (Exception)
+            {
+                cliente.Id = 0;
+                cliente.Token = "Ups! nuestros servidores estan ocupados, intente más tarde";
+                return Ok(cliente);
+
+            }
+        }
+            [HttpPost("GCodigo")]
+        public async Task<ActionResult<Cliente>> PostCodigoCliente(Cliente cliente)
+        {
+            var clien = await _context.Cliente.Where(f => f.Correo.Equals(cliente.Correo)).ToListAsync();
+
+            if (clien.Count != 0)
+            {
+               
+                var seed = Environment.TickCount;
+                var random = new Random(seed);
+                string cad = "";
+                for (int i = 0; i < 3; i++)
+                {
+                    var value = random.Next(0, 9);
+                    Console.WriteLine($"Iteración {i} - semilla {seed} - valor {value}");
+                    cad += cad + value;
+                }
+                clien[0].CodigoR = cad;
+                _context.Cliente.Update(clien[0]);
+                await _context.SaveChangesAsync();
+                cliente.Id = 1;
+
+                try
+                {
+                    Herramientas.Correo(clien[0].Correo, "Recuperación de contrase♫a", "Tu codigo de validacion es: " + cad);
+                }
+                catch (Exception)
+                {
+                    cliente.Id = 0;
+                    cliente.Token = "Ups! nuestros servidores estan ocupados, intente más tarde";
+                    return Ok(cliente);
+
+                }
+                return Ok(cliente);
+            }
+            else
+            {
+                cliente.Id = 0;
+                cliente.Token = "Ups! error este correo no fue registrado";
+                return Ok(cliente);
+            }
+
+        }
+        [HttpPost("CVerifi")]
+        public async Task<ActionResult<Cliente>> PostVerifiCCliente(Cliente cliente)
+        {
+            var clien = await _context.Cliente.Where(f => f.Correo.Equals(cliente.Correo)).ToListAsync();
+
+            if (clien.Count != 0)
+            {
+                if (clien[0].CodigoR.Equals(cliente.CodigoR))
+                {
+                    cliente.Id = 1;
+                }
+                else
+                {
+                    cliente.Id = 0;
+                }
+
+
+                return Ok(cliente);
+            }
+            else
+            {
+                cliente.Id = 0;
+                cliente.Token = "Ups error este Correo no fue registrado";
+                return Ok(cliente);
+            }
+
+        }
+        [HttpPost("CContra")]
+        public async Task<ActionResult<Cliente>> PostContraCliente(Cliente cliente)
+        {
+            var clien = await _context.Cliente.Where(f => f.Correo.Equals(cliente.Correo)).ToListAsync();
+
+            if (clien.Count != 0)
+            {
+                if (clien[0].CodigoR.Equals(cliente.CodigoR))
+                {
+                    clien[0].Contrasena = Encriptacion.EncodePassword(cliente.Contrasena);
+                    _context.Cliente.Update(clien[0]);
+                    await _context.SaveChangesAsync();
+                    cliente.Id = 1;
+                    cliente.Token = "Cambio correcto";
+                    return Ok(cliente);
+                }
+                else
+                {
+                    cliente.Id = 0;
+                    cliente.Token = "Problemas con tu codigo de confirmación";
+                    return Ok(cliente);
+                }
+            }
+            else
+            {
+                cliente.Id = 0;
+                cliente.Token = "Ups error este correo no fue registrado";
+                return Ok(cliente);
+            }
+
+        }
+
+        [HttpPost("Datos")]
+        public async Task<ActionResult<Cliente>> PostDatos(Cliente model)
+        {
+            try
+            {
+                var per = await _context.Cliente.Where(d => d.Token == model.Token).ToListAsync();
+                if (per.Count == 0)
+                {
+
+                    return Ok(model);
+                }
+                else
+                {
+                    model = per[0];
+                    return Ok(model);
+                }
+            }
+            catch (Exception)
+            {
+
+
+                return Ok(null);
+            }
         }
         [HttpPost("VerificaC")]
         public async Task<ActionResult<bool>> Postvalidar(Cliente model)
@@ -70,14 +217,71 @@ namespace ApiSDM.Controllers
             }
 
         }
+        public const double EarthRadius = 6371;
+        public static double GetDistance(GeoCoordinate point1, GeoCoordinate point2)
+        {
+            double distance = 0;
+            double Lat = (point2.Latitude - point1.Latitude) * (Math.PI / 180);
+            double Lon = (point2.Longitude - point1.Longitude) * (Math.PI / 180);
+            double a = Math.Sin(Lat / 2) * Math.Sin(Lat / 2) + Math.Cos(point1.Latitude * (Math.PI / 180)) * Math.Cos(point2.Latitude * (Math.PI / 180)) * Math.Sin(Lon / 2) * Math.Sin(Lon / 2);
+            double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+            distance = EarthRadius * c; 
+            return distance;
+        }
         [HttpPost("Ubicacion")]
         public async Task<ActionResult<ModelUbicacion>> PostUbicacionA(ModelUbicacion model)
         {
             try
             {
+                if (string.IsNullOrEmpty(model.Cp))
+                {
+                    model.Token = "Por favor ingrese su CP";
+                    return Ok(model);
+                }
+
                 Cliente client = await _context.Cliente.Where(f => f.Token == model.Token).FirstOrDefaultAsync();
+
                 if (client != null)
                 {
+                    IEnumerable<Repartidor> repart = await _context.Repartidor.Where(f => f.Activo == 1).ToArrayAsync();
+                    List<DistaciaModel> distancia = new List<DistaciaModel>();
+                    foreach (var distribucion in repart)
+                    {
+                        try
+                        {
+                            double rango = GetDistance(new GeoCoordinate() { Latitude = Convert.ToDouble(distribucion.Lat), Longitude = Convert.ToDouble(distribucion.Lon) }, new GeoCoordinate() { Longitude = Convert.ToDouble(model.Lon), Latitude = Convert.ToDouble(model.Lat) });
+                            distancia.Add(new DistaciaModel() { repartidor = distribucion,distancia = (rango) });
+                        }
+                        catch (Exception)
+                        {
+
+                        }
+                    }
+                    if (distancia.Count==0)
+                    {
+                        model.Token = "Nuestros servicios reanudaran pronto";
+                        return Ok(model);
+                    }
+                    else
+                    {
+                        List<DistaciaModel> nuevodistancia = new List<DistaciaModel>(distancia);
+                        foreach (var item in distancia)
+                        {
+                            if (item.distancia <= Convert.ToDouble(item.repartidor.Rango + 1))
+                            {
+                                item.rango = true;
+                            }
+                            else
+
+                                nuevodistancia.Remove(item);
+                        }
+                        distancia = new List<DistaciaModel>(nuevodistancia);
+                    }
+                    if (distancia.Count == 0)
+                    {
+                        model.Token = "Nuestros servicios no estan en el rango de distribución";
+                        return Ok(model);
+                    }
 
                     Ubicacion ubicaicion = new Ubicacion()
                     {
@@ -86,6 +290,7 @@ namespace ApiSDM.Controllers
                         Lat = model.Lat,
                         Lon = model.Lon,
                         Nota = model.Name,
+                        Cp = model.Cp
                     };
                     _context.Ubicacion.Add(ubicaicion);
                     await _context.SaveChangesAsync();
@@ -93,10 +298,12 @@ namespace ApiSDM.Controllers
 
 
                 }
+                model.Token = "Ok";
                 return Ok(model);
             }
             catch (Exception)
             {
+                model.Token = "Error de nube";
                 return Ok(model);
             }
         }
@@ -106,6 +313,18 @@ namespace ApiSDM.Controllers
             try
             {
                 return Ok(await _context.Ubicacion.Where(d => d.Cliente.Token == model.Token).ToListAsync());
+            }
+            catch (Exception)
+            {
+                return Ok(null);
+            }
+        }
+        [HttpPost("ListaOrdenes")]
+        public async Task<ActionResult<List<Orden>>> PostListOrdenes(ModelUbicacion model)
+        {
+            try
+            {
+                return Ok(await _context.Orden.Where(d => d.Cliente.Token == model.Token).ToListAsync());
             }
             catch (Exception)
             {

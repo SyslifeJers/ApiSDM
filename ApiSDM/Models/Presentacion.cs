@@ -11,8 +11,8 @@ namespace ApiSDM.Models
     {
         public Presentacion()
         {
-            DetalleOrdenIdPresentacionNavigation = new HashSet<DetalleOrden>();
-            DetalleOrdenProducto = new HashSet<DetalleOrden>();
+            Carrito = new HashSet<Carrito>();
+            DetalleOrden = new HashSet<DetalleOrden>();
         }
 
         public int Id { get; set; }
@@ -22,7 +22,7 @@ namespace ApiSDM.Models
         public int IdProducto { get; set; }
 
         public virtual Producto IdProductoNavigation { get; set; }
-        public virtual ICollection<DetalleOrden> DetalleOrdenIdPresentacionNavigation { get; set; }
-        public virtual ICollection<DetalleOrden> DetalleOrdenProducto { get; set; }
+        public virtual ICollection<Carrito> Carrito { get; set; }
+        public virtual ICollection<DetalleOrden> DetalleOrden { get; set; }
     }
 }

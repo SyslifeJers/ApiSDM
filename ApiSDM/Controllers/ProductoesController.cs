@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ApiSDM.Models;
+using ApiSDM.Models.ViewsModel;
 
 namespace ApiSDM.Controllers
 {
@@ -29,16 +30,34 @@ namespace ApiSDM.Controllers
 
         // GET: api/Productoes/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Producto>> GetProducto(int id)
+        public async Task<ActionResult> GetProducto(int id)
         {
-            var producto = await _context.Producto.FindAsync(id);
+            var producto = await _context.Producto.Include(x=>x.Presentacion).Where(x=>x.Id==id).ToListAsync();
 
             if (producto == null)
             {
                 return NotFound();
             }
+            if (producto.Count == 0)
+            {
+                return NotFound();
+            }
+            List<ModelProductos> modelProductos = new List<ModelProductos>();
+            foreach (Presentacion item in producto[0].Presentacion)
+            {
+                modelProductos.Add(new ModelProductos() { 
+                Nombre = producto[0].Nombre,
+                Descripcion = producto[0].Descripcion,
+                IdProducto =producto[0].Id,
+                Id_Presentacion = item.Id,
+                Medida = item.Medida,
+                Precentacion =item.Precentacion,
+                Precio = item.Precio,
+                
+                });
+            }
 
-            return producto;
+            return Ok(modelProductos);
         }
 
         // PUT: api/Productoes/5

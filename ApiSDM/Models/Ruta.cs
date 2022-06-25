@@ -19,6 +19,7 @@ namespace ApiSDM.Models
         public decimal? Lon { get; set; }
         public string Google { get; set; }
         public string Direccion { get; set; }
+        public string Cp { get; set; }
 
         public virtual ICollection<Orden> Orden { get; set; }
     }

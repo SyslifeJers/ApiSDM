@@ -12,6 +12,7 @@ namespace ApiSDM.Models
         public Producto()
         {
             Carrito = new HashSet<Carrito>();
+            DetalleOrden = new HashSet<DetalleOrden>();
             Presentacion = new HashSet<Presentacion>();
         }
 
@@ -24,6 +25,7 @@ namespace ApiSDM.Models
 
         public virtual Categoria CategoriaNavigation { get; set; }
         public virtual ICollection<Carrito> Carrito { get; set; }
+        public virtual ICollection<DetalleOrden> DetalleOrden { get; set; }
         public virtual ICollection<Presentacion> Presentacion { get; set; }
     }
 }

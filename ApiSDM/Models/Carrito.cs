@@ -15,8 +15,10 @@ namespace ApiSDM.Models
         public string Nota { get; set; }
         public int? ProductoId { get; set; }
         public int IdCliente { get; set; }
+        public int IdPresentacion { get; set; }
 
         public virtual Cliente IdClienteNavigation { get; set; }
+        public virtual Presentacion IdPresentacionNavigation { get; set; }
         public virtual Producto Producto { get; set; }
     }
 }

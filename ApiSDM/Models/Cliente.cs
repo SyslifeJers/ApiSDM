@@ -24,6 +24,7 @@ namespace ApiSDM.Models
         public int? Activo { get; set; }
         public DateTime? Modificado { get; set; }
         public string Token { get; set; }
+        public string CodigoR { get; set; }
 
         public virtual ICollection<Carrito> Carrito { get; set; }
         public virtual ICollection<Orden> Orden { get; set; }

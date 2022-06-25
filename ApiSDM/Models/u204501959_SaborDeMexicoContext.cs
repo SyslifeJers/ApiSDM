@@ -77,6 +77,9 @@ namespace ApiSDM.Models
                 entity.HasIndex(e => e.IdCliente)
                     .HasName("kf_idcliente_Carrito");
 
+                entity.HasIndex(e => e.IdPresentacion)
+                    .HasName("Id_Presentacion");
+
                 entity.HasIndex(e => e.ProductoId)
                     .HasName("fk_Carrito_Producto1_idx");
 
@@ -85,6 +88,10 @@ namespace ApiSDM.Models
                 entity.Property(e => e.Cantidad).HasColumnType("int(11)");
 
                 entity.Property(e => e.IdCliente).HasColumnType("int(11)");
+
+                entity.Property(e => e.IdPresentacion)
+                    .HasColumnName("Id_Presentacion")
+                    .HasColumnType("int(11)");
 
                 entity.Property(e => e.Modificado).HasColumnType("datetime");
 
@@ -102,6 +109,12 @@ namespace ApiSDM.Models
                     .HasForeignKey(d => d.IdCliente)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("kf_idcliente_Carrito");
+
+                entity.HasOne(d => d.IdPresentacionNavigation)
+                    .WithMany(p => p.Carrito)
+                    .HasForeignKey(d => d.IdPresentacion)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("Carrito_ibfk_1");
 
                 entity.HasOne(d => d.Producto)
                     .WithMany(p => p.Carrito)
@@ -127,6 +140,11 @@ namespace ApiSDM.Models
                 entity.Property(e => e.Id).HasColumnType("int(11)");
 
                 entity.Property(e => e.Activo).HasColumnType("int(11)");
+
+                entity.Property(e => e.CodigoR)
+                    .HasColumnType("text")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_unicode_ci");
 
                 entity.Property(e => e.Contrasena)
                     .HasColumnType("varchar(245)")
@@ -196,7 +214,7 @@ namespace ApiSDM.Models
                 entity.Property(e => e.Subtotal).HasColumnType("decimal(20,2)");
 
                 entity.HasOne(d => d.IdPresentacionNavigation)
-                    .WithMany(p => p.DetalleOrdenIdPresentacionNavigation)
+                    .WithMany(p => p.DetalleOrden)
                     .HasForeignKey(d => d.IdPresentacion)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_DetalleOrden_Presentacion");
@@ -208,7 +226,7 @@ namespace ApiSDM.Models
                     .HasConstraintName("fk_DetalleOrden_Orden");
 
                 entity.HasOne(d => d.Producto)
-                    .WithMany(p => p.DetalleOrdenProducto)
+                    .WithMany(p => p.DetalleOrden)
                     .HasForeignKey(d => d.ProductoId)
                     .HasConstraintName("fk_DetalleOrden_Producto1");
             });
@@ -364,6 +382,10 @@ namespace ApiSDM.Models
 
                 entity.Property(e => e.Activo).HasColumnType("int(11)");
 
+                entity.Property(e => e.Lat).HasColumnType("decimal(12,8)");
+
+                entity.Property(e => e.Lon).HasColumnType("decimal(12,8)");
+
                 entity.Property(e => e.Modificado).HasColumnType("datetime");
 
                 entity.Property(e => e.Nombre)
@@ -371,23 +393,19 @@ namespace ApiSDM.Models
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_unicode_ci");
 
-                entity.Property(e => e.Pin)
-                    .IsRequired()
-                    .HasColumnName("pin")
-                    .HasColumnType("varchar(10)")
-                    .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_unicode_ci");
-
-                entity.Property(e => e.Token)
-                    .IsRequired()
-                    .HasColumnType("longtext")
-                    .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_unicode_ci");
+                entity.Property(e => e.Rango).HasColumnType("decimal(10,2)");
             });
 
             modelBuilder.Entity<Ruta>(entity =>
             {
                 entity.Property(e => e.Id).HasColumnType("int(11)");
+
+                entity.Property(e => e.Cp)
+                    .IsRequired()
+                    .HasColumnName("CP")
+                    .HasColumnType("tinytext")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_unicode_ci");
 
                 entity.Property(e => e.Direccion)
                     .HasColumnType("varchar(345)")
@@ -420,6 +438,13 @@ namespace ApiSDM.Models
                 entity.Property(e => e.ClienteId)
                     .HasColumnName("Cliente_Id")
                     .HasColumnType("int(11)");
+
+                entity.Property(e => e.Cp)
+                    .IsRequired()
+                    .HasColumnName("CP")
+                    .HasColumnType("tinytext")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_unicode_ci");
 
                 entity.Property(e => e.Direccion)
                     .HasColumnType("varchar(545)")

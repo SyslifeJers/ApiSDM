@@ -24,7 +24,7 @@ namespace ApiSDM.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Repartidor>>> GetRepartidor()
         {
-            return await _context.Repartidor.ToListAsync();
+            return await _context.Repartidor.Where(d=>d.Activo==1).ToListAsync();
         }
 
         // GET: api/Repartidors/5

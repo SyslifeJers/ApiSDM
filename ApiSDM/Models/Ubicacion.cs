@@ -16,6 +16,7 @@ namespace ApiSDM.Models
         public int? Activo { get; set; }
         public int ClienteId { get; set; }
         public string Nota { get; set; }
+        public string Cp { get; set; }
 
         public virtual Cliente Cliente { get; set; }
     }
