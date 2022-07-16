@@ -141,6 +141,12 @@ namespace ApiSDM.Models
 
                 entity.Property(e => e.Activo).HasColumnType("int(11)");
 
+                entity.Property(e => e.CodigoN)
+                    .IsRequired()
+                    .HasColumnType("text")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_unicode_ci");
+
                 entity.Property(e => e.CodigoR)
                     .HasColumnType("text")
                     .HasCharSet("utf8mb4")

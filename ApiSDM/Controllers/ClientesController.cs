@@ -11,6 +11,7 @@ using System.Text;
 using System.Security.Cryptography;
 using ApiSDM.Models.ViewsModel;
 using System;
+using static ApiSDM.Controllers.Herramientas;
 
 namespace ApiSDM.Controllers
 {
@@ -113,6 +114,34 @@ namespace ApiSDM.Controllers
             }
 
         }
+        [HttpGet("prueba")]
+        public async Task<ActionResult> Prueba()
+        {
+            Notification.NotificationP("cTGJz-PdQhmlciro8ouqn8:APA91bEIZYldrAcR_J09dL9xqRBeYATGjbMP1Zy7DErKp0Tcwas0QURsCK68kCo1l4ig6Jn_-FuhXfOYKTdnnH9ivSseGCq5LlFXr3oHv7vtJ8s-lhobm4YuqMDaEZolGo3WNrf-YkBI");
+         //   Notification.SendNotification("cTGJz-PdQhmlciro8ouqn8:APA91bEIZYldrAcR_J09dL9xqRBeYATGjbMP1Zy7DErKp0Tcwas0QURsCK68kCo1l4ig6Jn_-FuhXfOYKTdnnH9ivSseGCq5LlFXr3oHv7vtJ8s-lhobm4YuqMDaEZolGo3WNrf-YkBI", "Prueba de alerta", "asdsaf");
+            return Ok(true);
+        }
+        [HttpPost("SaveNotifi")]
+        public async Task<ActionResult<Cliente>> PostVerifiCNotificacion(Cliente cliente)
+        {
+            var clien = await _context.Cliente.Where(f => f.Token.Equals(cliente.Token)).ToListAsync();
+
+            if (clien.Count != 0)
+            {
+                clien[0].CodigoN = cliente.CodigoN;
+                _context.Cliente.Update(clien[0]);
+                await _context.SaveChangesAsync();
+
+                return Ok(cliente);
+            }
+            else
+            {
+                cliente.Id = 0;
+                cliente.Token = "Ups error este Correo no fue registrado";
+                return Ok(cliente);
+            }
+
+        }
         [HttpPost("CContra")]
         public async Task<ActionResult<Cliente>> PostContraCliente(Cliente cliente)
         {
@@ -202,6 +231,7 @@ namespace ApiSDM.Controllers
                 if (true)
                 {
                     cliente.Contrasena = Encriptacion.EncodePassword(cliente.Contrasena);
+                    cliente.CodigoN = "na";
                     cliente.Activo = 1;
                     cliente.Modificado = DateTime.Now;
                     _context.Cliente.Add(cliente);
